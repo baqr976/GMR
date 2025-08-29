@@ -1,44 +1,234 @@
-// User Data (في التطبيق الحقيقي ستأتي من قاعدة البيانات)
-let userData = {
-    name: "محمد الإمبراطور",
-    age: 25,
-    rank: "إمبراطور",
-    salary: 10000,
-    balance: 50000,
-    companies: 3,
-    factories: 2,
-    shops: 5,
-    investments: 8
+// Global State Management
+let currentUser = null;
+let users = JSON.parse(localStorage.getItem('bankUsers')) || {};
+let countries = JSON.parse(localStorage.getItem('bankCountries')) || {};
+let globalSettings = JSON.parse(localStorage.getItem('bankSettings')) || {
+    adminUsers: ['admin'],
+    salaryInterval: 12 * 60 * 60 * 1000, // 12 hours in milliseconds
+    miningCooldown: 5 * 60 * 1000, // 5 minutes
+    manufacturingSpeedBoosts: {},
+    profitBoosts: {}
 };
 
-// Members Data
-let membersData = [
-    { id: 1, name: "أحمد الحاكم", balance: 35000, rank: "حاكم" },
-    { id: 2, name: "فاطمة الجنرال", balance: 28000, rank: "جنرال" },
-    { id: 3, name: "علي القائد", balance: 22000, rank: "قائد" },
-    { id: 4, name: "مريم الوزير", balance: 18000, rank: "وزير" },
-    { id: 5, name: "عمر الضابط", balance: 15000, rank: "ضابط" }
-];
+// Initialize admin user if not exists
+if (!users['admin']) {
+    users['admin'] = {
+        username: 'admin',
+        password: 'admin123',
+        name: 'المدير العام',
+        age: 30,
+        nationality: 'إدارة النظام',
+        rank: 'مدير عام',
+        salary: 0,
+        balance: 1000000000,
+        isAdmin: true,
+        lastSalaryTime: Date.now(),
+        companies: [],
+        factories: [],
+        weapons: [],
+        minerals: { iron: 0, gold: 0, silver: 0, uranium: 0, diamond: 0, coal: 0 },
+        food: 0,
+        country: null,
+        investments: [],
+        manufacturingQueue: [],
+        createdAt: Date.now()
+    };
+    saveData();
+}
 
-// Dark Mode Toggle
-document.addEventListener('DOMContentLoaded', function() {
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    const body = document.body;
+// Weapon Database with images
+const weaponsDB = {
+    ak47: {
+        name: 'AK-47',
+        image: 'https://via.placeholder.com/80x60/2563eb/ffffff?text=AK-47',
+        requirements: { iron: 50, coal: 20 },
+        time: 5 * 60 * 1000, // 5 minutes
+        value: 5000,
+        category: 'rifles'
+    },
+    m4a1: {
+        name: 'M4A1',
+        image: 'https://via.placeholder.com/80x60/7c3aed/ffffff?text=M4A1',
+        requirements: { iron: 45, coal: 15 },
+        time: 4 * 60 * 1000,
+        value: 4500,
+        category: 'rifles'
+    },
+    pistol: {
+        name: 'مسدس',
+        image: 'https://via.placeholder.com/80x60/059669/ffffff?text=PISTOL',
+        requirements: { iron: 20, coal: 5 },
+        time: 2 * 60 * 1000,
+        value: 1500,
+        category: 'handguns'
+    },
+    sniper: {
+        name: 'قناص',
+        image: 'https://via.placeholder.com/80x60/dc2626/ffffff?text=SNIPER',
+        requirements: { iron: 80, gold: 10, coal: 30 },
+        time: 10 * 60 * 1000,
+        value: 12000,
+        category: 'sniper'
+    },
+    grenade: {
+        name: 'قنبلة يدوية',
+        image: 'https://via.placeholder.com/80x60/f59e0b/ffffff?text=GRENADE',
+        requirements: { iron: 15, coal: 25, uranium: 5 },
+        time: 3 * 60 * 1000,
+        value: 3000,
+        category: 'explosives'
+    },
+    tank: {
+        name: 'دبابة',
+        image: 'https://via.placeholder.com/80x60/374151/ffffff?text=TANK',
+        requirements: { iron: 500, coal: 200, uranium: 50 },
+        time: 60 * 60 * 1000, // 1 hour
+        value: 500000,
+        category: 'vehicles'
+    },
+    helicopter: {
+        name: 'مروحية',
+        image: 'https://via.placeholder.com/80x60/1e40af/ffffff?text=HELI',
+        requirements: { iron: 300, gold: 50, uranium: 30 },
+        time: 45 * 60 * 1000,
+        value: 350000,
+        category: 'vehicles'
+    },
+    missile: {
+        name: 'صاروخ',
+        image: 'https://via.placeholder.com/80x60/b91c1c/ffffff?text=MISSILE',
+        requirements: { iron: 200, uranium: 100, gold: 20 },
+        time: 30 * 60 * 1000,
+        value: 200000,
+        category: 'explosives'
+    }
+};
+
+// Auth Functions
+function showRegister() {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerForm').style.display = 'block';
+}
+
+function showLogin() {
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'block';
+}
+
+function handleLogin(event) {
+    event.preventDefault();
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
     
-    // Check for saved dark mode preference
-    const isDarkMode = localStorage.getItem('darkMode') === 'true';
-    if (isDarkMode) {
-        body.classList.add('dark');
-        darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+    if (!users[username] || users[username].password !== password) {
+        showNotification('اسم المستخدم أو كلمة المرور غير صحيحة', 'error');
+        return;
     }
     
-    darkModeToggle.addEventListener('click', function() {
-        body.classList.toggle('dark');
-        const isDark = body.classList.contains('dark');
-        localStorage.setItem('darkMode', isDark);
-        darkModeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-    });
-});
+    currentUser = users[username];
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    
+    updateUI();
+    initializeTimers();
+    showNotification(`مرحباً بك ${currentUser.name}! 🎉`, 'success');
+}
+
+function handleRegister(event) {
+    event.preventDefault();
+    const username = document.getElementById('regUsername').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const age = parseInt(document.getElementById('regAge').value);
+    const nationality = document.getElementById('regNationality').value;
+    
+    if (users[username]) {
+        showNotification('اسم المستخدم موجود بالفعل', 'error');
+        return;
+    }
+    
+    users[username] = {
+        username,
+        password,
+        name: username,
+        age,
+        nationality,
+        rank: 'مواطن',
+        salary: 1000,
+        balance: 10000,
+        isAdmin: false,
+        lastSalaryTime: Date.now(),
+        companies: [],
+        factories: [],
+        weapons: [],
+        minerals: { iron: 0, gold: 0, silver: 0, uranium: 0, diamond: 0, coal: 0 },
+        food: 0,
+        country: null,
+        investments: [],
+        manufacturingQueue: [],
+        createdAt: Date.now()
+    };
+    
+    saveData();
+    showNotification('تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول', 'success');
+    showLogin();
+}
+
+function logout() {
+    currentUser = null;
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('authScreen').style.display = 'block';
+    clearInterval(salaryTimer);
+    clearInterval(miningTimer);
+    clearInterval(manufacturingTimer);
+}
+
+// UI Update Functions
+function updateUI() {
+    if (!currentUser) return;
+    
+    // Update header
+    document.getElementById('headerUserInfo').textContent = `${currentUser.name} - ${currentUser.rank}`;
+    document.getElementById('headerBalance').textContent = formatNumber(currentUser.balance);
+    
+    // Update user stats
+    document.getElementById('userName').textContent = currentUser.name;
+    document.getElementById('userRank').textContent = currentUser.rank;
+    document.getElementById('userSalary').textContent = formatNumber(currentUser.salary);
+    document.getElementById('userBalance').textContent = formatNumber(currentUser.balance);
+    document.getElementById('userNationality').textContent = currentUser.nationality;
+    
+    // Update last salary time
+    const lastSalary = new Date(currentUser.lastSalaryTime);
+    document.getElementById('lastSalaryTime').textContent = lastSalary.toLocaleString('ar-EG');
+    
+    // Update assets count
+    document.getElementById('companiesCount').textContent = currentUser.companies.length;
+    document.getElementById('factoriesCount').textContent = currentUser.factories.length;
+    document.getElementById('weaponsCount').textContent = currentUser.weapons.length;
+    document.getElementById('foodCount').textContent = formatNumber(currentUser.food);
+    
+    // Calculate total minerals
+    const totalMinerals = Object.values(currentUser.minerals).reduce((a, b) => a + b, 0);
+    document.getElementById('mineralsCount').textContent = formatNumber(totalMinerals);
+    
+    // Show/hide admin button
+    const adminBtn = document.getElementById('adminBtn');
+    if (currentUser.isAdmin) {
+        adminBtn.style.display = 'block';
+    } else {
+        adminBtn.style.display = 'none';
+    }
+    
+    // Show/hide country button
+    const countryBtn = document.getElementById('countryBtn');
+    if (currentUser.country) {
+        countryBtn.style.display = 'block';
+    } else {
+        countryBtn.style.display = 'none';
+    }
+    
+    saveData();
+}
 
 // Modal Functions
 function openModal(modalType) {
@@ -64,6 +254,9 @@ function openModal(modalType) {
             closeModal();
         }
     });
+    
+    // Initialize modal-specific functionality
+    initializeModalFunctionality(modalType);
 }
 
 function closeModal() {
@@ -73,746 +266,185 @@ function closeModal() {
 
 function getModalContent(modalType) {
     switch(modalType) {
-        case 'profileModal':
-            return `
-                <div class="modal-header">
-                    <h2 class="modal-title"><i class="fas fa-user-circle mr-2"></i>الملف الشخصي</h2>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <div class="space-y-4">
-                    <div class="text-center mb-6">
-                        <div class="w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mx-auto flex items-center justify-center mb-4">
-                            <i class="fas fa-crown text-3xl text-yellow-300"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold text-white">${userData.name}</h3>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-600/30">
-                            <i class="fas fa-calendar-alt text-blue-400 mb-2"></i>
-                            <p class="text-gray-300 text-sm">العمر</p>
-                            <p class="text-white font-bold">${userData.age} سنة</p>
-                        </div>
-                        <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-600/30">
-                            <i class="fas fa-medal text-purple-400 mb-2"></i>
-                            <p class="text-gray-300 text-sm">الرتبة</p>
-                            <p class="text-purple-400 font-bold">${userData.rank}</p>
-                        </div>
-                        <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-600/30">
-                            <i class="fas fa-money-bill-wave text-green-400 mb-2"></i>
-                            <p class="text-gray-300 text-sm">الراتب الشهري</p>
-                            <p class="text-green-400 font-bold">${userData.salary.toLocaleString()}</p>
-                        </div>
-                        <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-600/30">
-                            <i class="fas fa-wallet text-yellow-400 mb-2"></i>
-                            <p class="text-gray-300 text-sm">الرصيد الحالي</p>
-                            <p class="text-yellow-400 font-bold">${userData.balance.toLocaleString()}</p>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-6 pt-4 border-t border-gray-600/30">
-                        <h4 class="text-lg font-bold mb-4 text-center text-yellow-400">إحصائيات الممتلكات</h4>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="text-center">
-                                <div class="w-12 h-12 bg-blue-500/20 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                                    <i class="fas fa-building text-blue-400"></i>
-                                </div>
-                                <p class="text-blue-400 font-bold text-xl">${userData.companies}</p>
-                                <p class="text-gray-400 text-sm">شركات</p>
-                            </div>
-                            <div class="text-center">
-                                <div class="w-12 h-12 bg-red-500/20 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                                    <i class="fas fa-industry text-red-400"></i>
-                                </div>
-                                <p class="text-red-400 font-bold text-xl">${userData.factories}</p>
-                                <p class="text-gray-400 text-sm">مصانع</p>
-                            </div>
-                            <div class="text-center">
-                                <div class="w-12 h-12 bg-pink-500/20 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                                    <i class="fas fa-store text-pink-400"></i>
-                                </div>
-                                <p class="text-pink-400 font-bold text-xl">${userData.shops}</p>
-                                <p class="text-gray-400 text-sm">محلات</p>
-                            </div>
-                            <div class="text-center">
-                                <div class="w-12 h-12 bg-green-500/20 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                                    <i class="fas fa-chart-line text-green-400"></i>
-                                </div>
-                                <p class="text-green-400 font-bold text-xl">${userData.investments}</p>
-                                <p class="text-gray-400 text-sm">استثمارات</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-        case 'investmentModal':
-            return `
-                <div class="modal-header">
-                    <h2 class="modal-title"><i class="fas fa-chart-line mr-2"></i>الاستثمارات</h2>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <form onsubmit="handleInvestment(event)">
-                    <div class="form-group">
-                        <label class="form-label">نوع الاستثمار</label>
-                        <select class="form-select" id="investmentType" required>
-                            <option value="">اختر نوع الاستثمار</option>
-                            <option value="stocks">أسهم الشركات</option>
-                            <option value="real-estate">العقارات</option>
-                            <option value="crypto">العملات الرقمية</option>
-                            <option value="gold">الذهب والمعادن</option>
-                            <option value="startup">الشركات الناشئة</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">المبلغ المراد استثماره</label>
-                        <input type="number" class="form-input" id="investmentAmount" placeholder="أدخل المبلغ" min="1000" required>
-                        <p class="text-sm text-gray-400 mt-1">الحد الأدنى: 1,000</p>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">مدة الاستثمار</label>
-                        <select class="form-select" id="investmentDuration" required>
-                            <option value="">اختر المدة</option>
-                            <option value="1">شهر واحد (عائد 5%)</option>
-                            <option value="3">3 أشهر (عائد 15%)</option>
-                            <option value="6">6 أشهر (عائد 35%)</option>
-                            <option value="12">سنة كاملة (عائد 80%)</option>
-                        </select>
-                    </div>
-                    <div class="flex gap-3">
-                        <button type="submit" class="btn btn-primary flex-1">
-                            <i class="fas fa-rocket"></i>
-                            بدء الاستثمار
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
-                    </div>
-                </form>
-            `;
-            
-        case 'miningModal':
-            return `
-                <div class="modal-header">
-                    <h2 class="modal-title"><i class="fas fa-pickaxe mr-2"></i>التعدين</h2>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <div class="mb-6">
-                    <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-4">
-                        <p class="text-yellow-400 text-center"><i class="fas fa-info-circle mr-2"></i>كل عملية تعدين تكلف 500 وحدة طاقة</p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div class="bg-blue-500/10 p-4 rounded-lg text-center">
-                            <i class="fas fa-battery-three-quarters text-blue-400 text-2xl mb-2"></i>
-                            <p class="text-blue-400 font-bold text-xl">2,500</p>
-                            <p class="text-gray-400 text-sm">طاقة متاحة</p>
-                        </div>
-                        <div class="bg-green-500/10 p-4 rounded-lg text-center">
-                            <i class="fas fa-gem text-green-400 text-2xl mb-2"></i>
-                            <p class="text-green-400 font-bold text-xl">1,250</p>
-                            <p class="text-gray-400 text-sm">نقاط تعدين</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <form onsubmit="handleMining(event)">
-                    <div class="form-group">
-                        <label class="form-label">نوع المعدن</label>
-                        <select class="form-select" id="miningType" required>
-                            <option value="">اختر المعدن</option>
-                            <option value="gold">ذهب (عائد عالي - خطورة منخفضة)</option>
-                            <option value="silver">فضة (عائد متوسط - خطورة منخفضة)</option>
-                            <option value="diamond">ماس (عائد عالي جداً - خطورة عالية)</option>
-                            <option value="coal">فحم (عائد منخفض - خطورة منخفضة)</option>
-                            <option value="iron">حديد (عائد متوسط - خطورة متوسطة)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">عدد مرات التعدين</label>
-                        <select class="form-select" id="miningCount" required>
-                            <option value="">اختر العدد</option>
-                            <option value="1">مرة واحدة (500 طاقة)</option>
-                            <option value="3">3 مرات (1,500 طاقة)</option>
-                            <option value="5">5 مرات (2,500 طاقة)</option>
-                        </select>
-                    </div>
-                    <div class="flex gap-3">
-                        <button type="submit" class="btn btn-primary flex-1">
-                            <i class="fas fa-tools"></i>
-                            بدء التعدين
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
-                    </div>
-                </form>
-            `;
-            
         case 'transferModal':
-            return `
-                <div class="modal-header">
-                    <h2 class="modal-title"><i class="fas fa-exchange-alt mr-2"></i>تحويل الأموال</h2>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <form onsubmit="handleTransfer(event)">
-                    <div class="form-group">
-                        <label class="form-label">المستلم</label>
-                        <select class="form-select" id="transferRecipient" required>
-                            <option value="">اختر المستلم</option>
-                            ${membersData.map(member => 
-                                `<option value="${member.id}">${member.name} - ${member.rank}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">المبلغ</label>
-                        <input type="number" class="form-input" id="transferAmount" placeholder="أدخل المبلغ" min="100" max="${userData.balance}" required>
-                        <p class="text-sm text-gray-400 mt-1">رصيدك الحالي: ${userData.balance.toLocaleString()}</p>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">سبب التحويل (اختياري)</label>
-                        <textarea class="form-input" id="transferReason" placeholder="أدخل سبب التحويل" rows="3"></textarea>
-                    </div>
-                    <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4">
-                        <p class="text-red-400 text-sm"><i class="fas fa-exclamation-triangle mr-2"></i>رسوم التحويل: 2% من المبلغ</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <button type="submit" class="btn btn-primary flex-1">
-                            <i class="fas fa-paper-plane"></i>
-                            تأكيد التحويل
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
-                    </div>
-                </form>
-            `;
-            
+            return getTransferModalContent();
+        case 'investmentModal':
+            return getInvestmentModalContent();
+        case 'miningModal':
+            return getMiningModalContent();
+        case 'manufacturingModal':
+            return getManufacturingModalContent();
         case 'membersModal':
-            return `
-                <div class="modal-header">
-                    <h2 class="modal-title"><i class="fas fa-users mr-2"></i>قائمة الأعضاء</h2>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <div class="space-y-3 max-h-96 overflow-y-auto">
-                    ${membersData.map(member => `
-                        <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-600/30 flex items-center justify-between">
-                            <div class="flex items-center space-x-3 space-x-reverse">
-                                <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-user text-white"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-white">${member.name}</h4>
-                                    <p class="text-sm text-gray-400">${member.rank}</p>
-                                </div>
-                            </div>
-                            <div class="text-left">
-                                <p class="font-bold text-green-400">${member.balance.toLocaleString()}</p>
-                                <button onclick="quickTransfer(${member.id})" class="text-xs bg-blue-500/20 hover:bg-blue-500/40 px-3 py-1 rounded-lg text-blue-400 transition-colors">
-                                    <i class="fas fa-paper-plane mr-1"></i>تحويل
-                                </button>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            
+            return getMembersModalContent();
         case 'adminModal':
-            return `
-                <div class="modal-header">
-                    <h2 class="modal-title"><i class="fas fa-crown mr-2"></i>لوحة الإمبراطور</h2>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <div class="space-y-6">
-                    <div class="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 p-4 rounded-lg border border-yellow-500/30">
-                        <h3 class="text-yellow-400 font-bold mb-3"><i class="fas fa-treasure-chest mr-2"></i>خزينة الدولة</h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="text-center">
-                                <p class="text-2xl font-bold text-green-400">2,500,000</p>
-                                <p class="text-sm text-gray-400">الرصيد الحالي</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-2xl font-bold text-blue-400">850,000</p>
-                                <p class="text-sm text-gray-400">الدخل الشهري</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <form onsubmit="handleStateManagement(event)">
-                        <div class="form-group">
-                            <label class="form-label">نوع العملية</label>
-                            <select class="form-select" id="stateOperation" required>
-                                <option value="">اختر العملية</option>
-                                <option value="add">إضافة أموال للخزينة</option>
-                                <option value="withdraw">سحب من الخزينة</option>
-                                <option value="salary">صرف رواتب الموظفين</option>
-                                <option value="bonus">منح مكافآت</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">المبلغ</label>
-                            <input type="number" class="form-input" id="stateAmount" placeholder="أدخل المبلغ" min="1" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">التفاصيل</label>
-                            <textarea class="form-input" id="stateDetails" placeholder="أدخل تفاصيل العملية" rows="3" required></textarea>
-                        </div>
-                        <div class="flex gap-3">
-                            <button type="submit" class="btn btn-primary flex-1">
-                                <i class="fas fa-check"></i>
-                                تنفيذ العملية
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
-                        </div>
-                    </form>
-                </div>
-            `;
-            
+            return getAdminModalContent();
+        case 'countryModal':
+            return getCountryModalContent();
         case 'factoryModal':
-            return `
-                <div class="modal-header">
-                    <h2 class="modal-title"><i class="fas fa-industry mr-2"></i>إنشاء مصنع</h2>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <form onsubmit="handleFactory(event)">
-                    <div class="form-group">
-                        <label class="form-label">نوع المصنع</label>
-                        <select class="form-select" id="factoryType" required>
-                            <option value="">اختر نوع المصنع</option>
-                            <option value="textile">مصنع نسيج (تكلفة: 50,000)</option>
-                            <option value="food">مصنع أغذية (تكلفة: 75,000)</option>
-                            <option value="electronics">مصنع إلكترونيات (تكلفة: 150,000)</option>
-                            <option value="automotive">مصنع سيارات (تكلفة: 500,000)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">اسم المصنع</label>
-                        <input type="text" class="form-input" id="factoryName" placeholder="أدخل اسم المصنع" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">الموقع</label>
-                        <select class="form-select" id="factoryLocation" required>
-                            <option value="">اختر الموقع</option>
-                            <option value="industrial">المنطقة الصناعية</option>
-                            <option value="port">قرب الميناء</option>
-                            <option value="city">داخل المدينة</option>
-                            <option value="suburbs">الضواحي</option>
-                        </select>
-                    </div>
-                    <div class="flex gap-3">
-                        <button type="submit" class="btn btn-primary flex-1">
-                            <i class="fas fa-hammer"></i>
-                            إنشاء المصنع
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
-                    </div>
-                </form>
-            `;
-            
+            return getFactoryModalContent();
         case 'companyModal':
-            return `
-                <div class="modal-header">
-                    <h2 class="modal-title"><i class="fas fa-building mr-2"></i>تأسيس شركة</h2>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <form onsubmit="handleCompany(event)">
-                    <div class="form-group">
-                        <label class="form-label">نوع الشركة</label>
-                        <select class="form-select" id="companyType" required>
-                            <option value="">اختر نوع الشركة</option>
-                            <option value="tech">شركة تقنية (تكلفة: 100,000)</option>
-                            <option value="consulting">شركة استشارات (تكلفة: 50,000)</option>
-                            <option value="trading">شركة تجارية (تكلفة: 200,000)</option>
-                            <option value="construction">شركة مقاولات (تكلفة: 300,000)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">اسم الشركة</label>
-                        <input type="text" class="form-input" id="companyName" placeholder="أدخل اسم الشركة" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">رأس المال الإضافي</label>
-                        <input type="number" class="form-input" id="companyCapital" placeholder="رأس مال إضافي (اختياري)" min="0">
-                    </div>
-                    <div class="flex gap-3">
-                        <button type="submit" class="btn btn-primary flex-1">
-                            <i class="fas fa-rocket"></i>
-                            تأسيس الشركة
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
-                    </div>
-                </form>
-            `;
-            
-        case 'shopModal':
-            return `
-                <div class="modal-header">
-                    <h2 class="modal-title"><i class="fas fa-store mr-2"></i>فتح محل تجاري</h2>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <form onsubmit="handleShop(event)">
-                    <div class="form-group">
-                        <label class="form-label">نوع المحل</label>
-                        <select class="form-select" id="shopType" required>
-                            <option value="">اختر نوع المحل</option>
-                            <option value="grocery">بقالة (تكلفة: 25,000)</option>
-                            <option value="clothing">ملابس (تكلفة: 40,000)</option>
-                            <option value="electronics">إلكترونيات (تكلفة: 80,000)</option>
-                            <option value="restaurant">مطعم (تكلفة: 100,000)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">اسم المحل</label>
-                        <input type="text" class="form-input" id="shopName" placeholder="أدخل اسم المحل" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">الموقع</label>
-                        <select class="form-select" id="shopLocation" required>
-                            <option value="">اختر الموقع</option>
-                            <option value="mall">مركز تجاري</option>
-                            <option value="street">شارع رئيسي</option>
-                            <option value="neighborhood">حي سكني</option>
-                            <option value="downtown">وسط المدينة</option>
-                        </select>
-                    </div>
-                    <div class="flex gap-3">
-                        <button type="submit" class="btn btn-primary flex-1">
-                            <i class="fas fa-store-alt"></i>
-                            فتح المحل
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
-                    </div>
-                </form>
-            `;
-            
+            return getCompanyModalContent();
         default:
-            return '<p class="text-white">محتوى غير متوفر</p>';
+            return '<p class="text-white text-center">محتوى غير متوفر</p>';
     }
 }
 
-// Form Handlers
-function handleInvestment(event) {
-    event.preventDefault();
-    const type = document.getElementById('investmentType').value;
-    const amount = parseInt(document.getElementById('investmentAmount').value);
-    const duration = document.getElementById('investmentDuration').value;
+function getTransferModalContent() {
+    const otherUsers = Object.values(users).filter(u => u.username !== currentUser.username);
     
-    if (amount > userData.balance) {
-        showAlert('رصيدك غير كافي لهذا الاستثمار!', 'error');
-        return;
-    }
-    
-    // Update user balance
-    userData.balance -= amount;
-    userData.investments += 1;
-    updateUI();
-    
-    showAlert(`تم بدء استثمار بقيمة ${amount.toLocaleString()} بنجاح!`, 'success');
-    closeModal();
+    return `
+        <div class="modal-header">
+            <h2 class="modal-title"><i class="fas fa-exchange-alt mr-2"></i>تحويل الأموال</h2>
+            <button class="close-modal">&times;</button>
+        </div>
+        <form onsubmit="handleTransfer(event)">
+            <div class="form-group">
+                <label class="form-label">المستلم</label>
+                <select class="form-select" id="transferRecipient" required>
+                    <option value="">اختر المستلم</option>
+                    ${otherUsers.map(user => 
+                        `<option value="${user.username}">${user.name} (${user.rank}) - ${user.nationality}</option>`
+                    ).join('')}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">نوع التحويل</label>
+                <select class="form-select" id="transferType" required>
+                    <option value="money">أموال</option>
+                    <option value="food">طعام</option>
+                    <option value="minerals">معادن</option>
+                    <option value="weapons">أسلحة</option>
+                </select>
+            </div>
+            <div id="transferAmountSection" class="form-group">
+                <label class="form-label">المبلغ</label>
+                <input type="number" class="form-input" id="transferAmount" placeholder="أدخل المبلغ" min="1" required>
+                <p class="text-sm text-gray-400 mt-1">رصيدك الحالي: ${formatNumber(currentUser.balance)}</p>
+            </div>
+            <div id="transferMineralSection" class="form-group" style="display: none;">
+                <label class="form-label">نوع المعدن</label>
+                <select class="form-select" id="transferMineral">
+                    <option value="iron">حديد (${currentUser.minerals.iron})</option>
+                    <option value="gold">ذهب (${currentUser.minerals.gold})</option>
+                    <option value="silver">فضة (${currentUser.minerals.silver})</option>
+                    <option value="uranium">يورانيوم (${currentUser.minerals.uranium})</option>
+                    <option value="diamond">ماس (${currentUser.minerals.diamond})</option>
+                    <option value="coal">فحم (${currentUser.minerals.coal})</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">سبب التحويل</label>
+                <textarea class="form-input" id="transferReason" placeholder="أدخل سبب التحويل" rows="2"></textarea>
+            </div>
+            <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-4">
+                <p class="text-yellow-400 text-sm"><i class="fas fa-info-circle mr-2"></i>رسوم التحويل: 2%</p>
+            </div>
+            <div class="flex gap-3">
+                <button type="submit" class="btn btn-primary flex-1">
+                    <i class="fas fa-paper-plane"></i>
+                    تأكيد التحويل
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+            </div>
+        </form>
+    `;
 }
 
-function handleMining(event) {
-    event.preventDefault();
-    const type = document.getElementById('miningType').value;
-    const count = parseInt(document.getElementById('miningCount').value);
-    const energyCost = count * 500;
+function getInvestmentModalContent() {
+    const companiesWithInvestments = Object.values(users)
+        .filter(u => u.companies && u.companies.length > 0)
+        .map(u => u.companies.map(c => ({ ...c, owner: u.name })))
+        .flat();
     
-    // Simulate mining results
-    const results = [];
-    for (let i = 0; i < count; i++) {
-        const success = Math.random() > 0.3; // 70% success rate
-        if (success) {
-            const earnings = Math.floor(Math.random() * 2000) + 500;
-            results.push(earnings);
-            userData.balance += earnings;
-        }
-    }
-    
-    updateUI();
-    
-    if (results.length > 0) {
-        const totalEarnings = results.reduce((a, b) => a + b, 0);
-        showAlert(`نجح التعدين! ربحت ${totalEarnings.toLocaleString()} من ${count} محاولات`, 'success');
-    } else {
-        showAlert('للأسف، فشل التعدين هذه المرة. حاول مرة أخرى!', 'error');
-    }
-    
-    closeModal();
-}
-
-function handleTransfer(event) {
-    event.preventDefault();
-    const recipientId = document.getElementById('transferRecipient').value;
-    const amount = parseInt(document.getElementById('transferAmount').value);
-    const reason = document.getElementById('transferReason').value;
-    
-    const fee = Math.floor(amount * 0.02); // 2% fee
-    const totalCost = amount + fee;
-    
-    if (totalCost > userData.balance) {
-        showAlert('رصيدك غير كافي (تذكر رسوم التحويل 2%)!', 'error');
-        return;
-    }
-    
-    const recipient = membersData.find(m => m.id == recipientId);
-    userData.balance -= totalCost;
-    updateUI();
-    
-    showAlert(`تم تحويل ${amount.toLocaleString()} إلى ${recipient.name} بنجاح!`, 'success');
-    closeModal();
-}
-
-function handleStateManagement(event) {
-    event.preventDefault();
-    const operation = document.getElementById('stateOperation').value;
-    const amount = parseInt(document.getElementById('stateAmount').value);
-    const details = document.getElementById('stateDetails').value;
-    
-    showAlert(`تم تنفيذ عملية ${operation} بمبلغ ${amount.toLocaleString()} بنجاح!`, 'success');
-    closeModal();
-}
-
-function handleFactory(event) {
-    event.preventDefault();
-    const type = document.getElementById('factoryType').value;
-    const name = document.getElementById('factoryName').value;
-    const location = document.getElementById('factoryLocation').value;
-    
-    const costs = {
-        textile: 50000,
-        food: 75000,
-        electronics: 150000,
-        automotive: 500000
-    };
-    
-    const cost = costs[type];
-    if (cost > userData.balance) {
-        showAlert('رصيدك غير كافي لفتح هذا المحل!', 'error');
-        return;
-    }
-    
-    userData.balance -= cost;
-    userData.shops += 1;
-    updateUI();
-    
-    showAlert(`تم فتح محل "${name}" بنجاح!`, 'success');
-    closeModal();
-}
-
-// Quick Transfer Function
-function quickTransfer(memberId) {
-    const member = membersData.find(m => m.id === memberId);
-    const amount = prompt(`كم تريد أن تحول إلى ${member.name}؟`);
-    
-    if (amount && !isNaN(amount) && parseInt(amount) > 0) {
-        const transferAmount = parseInt(amount);
-        const fee = Math.floor(transferAmount * 0.02);
-        const total = transferAmount + fee;
+    return `
+        <div class="modal-header">
+            <h2 class="modal-title"><i class="fas fa-chart-line mr-2"></i>الاستثمارات</h2>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="tab-container">
+            <button class="tab-button active" onclick="switchTab('investTab')">استثمار جديد</button>
+            <button class="tab-button" onclick="switchTab('myInvestmentsTab')">استثماراتي</button>
+        </div>
         
-        if (total <= userData.balance) {
-            userData.balance -= total;
-            updateUI();
-            showAlert(`تم تحويل ${transferAmount.toLocaleString()} إلى ${member.name} بنجاح!`, 'success');
-        } else {
-            showAlert('رصيدك غير كافي!', 'error');
-        }
-    }
-}
-
-// UI Update Functions
-function updateUI() {
-    // Update balance in header
-    document.getElementById('userBalance').textContent = userData.balance.toLocaleString();
-    
-    // Update user info
-    document.getElementById('userName').textContent = userData.name;
-    document.getElementById('userAge').textContent = `${userData.age} سنة`;
-    document.getElementById('userRank').textContent = userData.rank;
-    document.getElementById('userSalary').textContent = userData.salary.toLocaleString();
-    document.getElementById('userWallet').textContent = userData.balance.toLocaleString();
-    
-    // Update assets count
-    document.getElementById('companiesCount').textContent = userData.companies;
-    document.getElementById('factoriesCount').textContent = userData.factories;
-    document.getElementById('shopsCount').textContent = userData.shops;
-    document.getElementById('investmentsCount').textContent = userData.investments;
-    
-    // Save to localStorage
-    localStorage.setItem('userData', JSON.stringify(userData));
-}
-
-// Alert System
-function showAlert(message, type = 'success') {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} fixed top-4 right-4 z-[9999] min-w-80 animate-slide-in`;
-    alertDiv.innerHTML = `
-        <div class="flex items-center justify-between">
-            <span>${message}</span>
-            <button onclick="this.parentElement.parentElement.remove()" class="mr-2 text-lg">&times;</button>
+        <div id="investTab" class="tab-content active">
+            <form onsubmit="handleInvestment(event)">
+                <div class="form-group">
+                    <label class="form-label">الشركة</label>
+                    <select class="form-select" id="investmentCompany" required>
+                        <option value="">اختر الشركة</option>
+                        ${companiesWithInvestments.map((company, index) => 
+                            `<option value="${index}">${company.name} - مالكها: ${company.owner}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">مبلغ الاستثمار</label>
+                    <input type="number" class="form-input" id="investmentAmount" placeholder="أدخل المبلغ" min="1000" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">مدة الاستثمار</label>
+                    <select class="form-select" id="investmentDuration" required>
+                        <option value="30">شهر (عائد 8%)</option>
+                        <option value="90">3 أشهر (عائد 25%)</option>
+                        <option value="180">6 أشهر (عائد 55%)</option>
+                        <option value="365">سنة (عائد 120%)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-full">
+                    <i class="fas fa-chart-line mr-2"></i>استثمر الآن
+                </button>
+            </form>
+        </div>
+        
+        <div id="myInvestmentsTab" class="tab-content">
+            <div id="investmentsList">
+                ${currentUser.investments.length === 0 ? 
+                    '<p class="text-gray-400 text-center py-4">لا توجد استثمارات حالية</p>' :
+                    currentUser.investments.map(inv => `
+                        <div class="card mb-3">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-bold text-lg">${inv.companyName}</h4>
+                                    <p class="text-sm text-gray-400">مبلغ: ${formatNumber(inv.amount)} - عائد متوقع: ${formatNumber(inv.expectedReturn)}</p>
+                                    <p class="text-xs text-gray-500">تاريخ الانتهاء: ${new Date(inv.endDate).toLocaleDateString('ar-EG')}</p>
+                                </div>
+                                <div class="text-right">
+                                    ${inv.endDate <= Date.now() ? 
+                                        `<button onclick="collectInvestmentReturn(${inv.id})" class="btn btn-success btn-sm">
+                                            <i class="fas fa-coins mr-1"></i>استلام العائد
+                                        </button>` :
+                                        `<div class="text-yellow-400 font-bold">
+                                            <i class="fas fa-clock mr-1"></i>قيد الانتظار
+                                        </div>`
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')
+                }
+            </div>
         </div>
     `;
-    
-    document.body.appendChild(alertDiv);
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        if (alertDiv.parentElement) {
-            alertDiv.remove();
-        }
-    }, 5000);
 }
 
-// Load saved data on page load
-document.addEventListener('DOMContentLoaded', function() {
-    const savedData = localStorage.getItem('userData');
-    if (savedData) {
-        userData = { ...userData, ...JSON.parse(savedData) };
-    }
-    updateUI();
+function getMiningModalContent() {
+    const canMine = !currentUser.lastMiningTime || (Date.now() - currentUser.lastMiningTime) >= globalSettings.miningCooldown;
+    const timeLeft = canMine ? 0 : globalSettings.miningCooldown - (Date.now() - currentUser.lastMiningTime);
     
-    // Add some welcome animations
-    setTimeout(() => {
-        showAlert('مرحباً بك في الإمبراطورية الاقتصادية! 👑', 'success');
-    }, 1000);
-});
-
-// Auto-save every 30 seconds
-setInterval(() => {
-    localStorage.setItem('userData', JSON.stringify(userData));
-}, 30000);
-
-// Keyboard shortcuts
-document.addEventListener('keydown', function(e) {
-    // ESC to close modal
-    if (e.key === 'Escape') {
-        closeModal();
-    }
-    
-    // Ctrl/Cmd + number keys for quick actions
-    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
-        switch(e.key) {
-            case '1': openModal('profileModal'); e.preventDefault(); break;
-            case '2': openModal('investmentModal'); e.preventDefault(); break;
-            case '3': openModal('miningModal'); e.preventDefault(); break;
-            case '4': openModal('transferModal'); e.preventDefault(); break;
-            case '5': openModal('membersModal'); e.preventDefault(); break;
-        }
-    }
-});
-
-// Add some random events for engagement
-function triggerRandomEvent() {
-    const events = [
-        { message: '🎉 تم صرف راتبك الشهري!', amount: userData.salary, type: 'success' },
-        { message: '📈 ارتفعت قيمة استثماراتك!', amount: Math.floor(Math.random() * 5000) + 1000, type: 'success' },
-        { message: '🏭 أحد مصانعك حقق أرباحاً!', amount: Math.floor(Math.random() * 3000) + 500, type: 'success' },
-        { message: '🏪 محلاتك التجارية تحقق مبيعات ممتازة!', amount: Math.floor(Math.random() * 2000) + 300, type: 'success' }
-    ];
-    
-    const event = events[Math.floor(Math.random() * events.length)];
-    userData.balance += event.amount;
-    updateUI();
-    showAlert(`${event.message} +${event.amount.toLocaleString()}`, event.type);
-}
-
-// Trigger random events every 2-5 minutes
-setInterval(triggerRandomEvent, Math.random() * 180000 + 120000);
-
-// Add some interactive effects
-document.addEventListener('mousemove', function(e) {
-    const cards = document.querySelectorAll('.group');
-    cards.forEach(card => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
-            const xPercent = (x / rect.width) * 100;
-            const yPercent = (y / rect.height) * 100;
-            
-            card.style.setProperty('--mouse-x', `${xPercent}%`);
-            card.style.setProperty('--mouse-y', `${yPercent}%`);
-        }
-    });
-});
-
-// Progressive Web App features
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-        .then(() => console.log('SW registered'))
-        .catch(() => console.log('SW registration failed'));
-}
-
-// Add to home screen prompt
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-    deferredPrompt = e;
-    // Show install button or banner
-});
-
-// Prevent context menu on long press (mobile)
-document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-});
-
-// Add haptic feedback for mobile
-function vibrate(pattern = [100]) {
-    if (navigator.vibrate) {
-        navigator.vibrate(pattern);
-    }
-}
-
-// Add vibration to button clicks
-document.addEventListener('click', function(e) {
-    if (e.target.matches('button') || e.target.closest('button')) {
-        vibrate([50]);
-    }
-});.balance) {
-        showAlert('رصيدك غير كافي لإنشاء هذا المصنع!', 'error');
-        return;
-    }
-    
-    userData.balance -= cost;
-    userData.factories += 1;
-    updateUI();
-    
-    showAlert(`تم إنشاء مصنع "${name}" بنجاح!`, 'success');
-    closeModal();
-}
-
-function handleCompany(event) {
-    event.preventDefault();
-    const type = document.getElementById('companyType').value;
-    const name = document.getElementById('companyName').value;
-    const capital = parseInt(document.getElementById('companyCapital').value) || 0;
-    
-    const costs = {
-        tech: 100000,
-        consulting: 50000,
-        trading: 200000,
-        construction: 300000
-    };
-    
-    const totalCost = costs[type] + capital;
-    if (totalCost > userData.balance) {
-        showAlert('رصيدك غير كافي لتأسيس هذه الشركة!', 'error');
-        return;
-    }
-    
-    userData.balance -= totalCost;
-    userData.companies += 1;
-    updateUI();
-    
-    showAlert(`تم تأسيس شركة "${name}" بنجاح!`, 'success');
-    closeModal();
-}
-
-function handleShop(event) {
-    event.preventDefault();
-    const type = document.getElementById('shopType').value;
-    const name = document.getElementById('shopName').value;
-    const location = document.getElementById('shopLocation').value;
-    
-    const costs = {
-        grocery: 25000,
-        clothing: 40000,
-        electronics: 80000,
-        restaurant: 100000
-    };
-    
-    const cost = costs[type];
-    if (cost > userData
+    return `
+        <div class="modal-header">
+            <h2 class="modal-title"><i class="fas fa-pickaxe mr-2"></i>التعدين</h2>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="mb-6">
+            <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-4">
+                <h3 class="text-blue-400 font-bold mb-2">مخزون المعادن الحالي</h3>
+                <div class="grid grid-cols-3 gap-2 text-sm">
+                    <span>حديد: ${currentUser.minerals.iron}</span>
+                    <span>ذهب: ${currentUser.minerals.gold}</span>
+                    <span>فضة: ${currentUser.minerals.silver}</span>
+                    <span>يورانيوم: ${currentUser.minerals.uranium}</span>
+                    <span>ماس: ${currentUser.minerals.diamond}</span>
+                    <span>فحم: ${currentUser.minerals.coal}</span>
+                </div>
+            </div>
