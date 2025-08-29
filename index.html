@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>Empire Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="sidebar">
+    <h2>القائمة</h2>
+    <ul>
+      <li onclick="showSection('profile')">🏠 الملف الشخصي</li>
+      <li onclick="showSection('invest')">💰 الاستثمار والتعدين</li>
+      <li onclick="showSection('state')">🏛️ الدولة</li>
+    </ul>
+  </div>
+
+  <div class="content">
+    <section id="profile">
+      <h1>الملف الشخصي</h1>
+      <div id="profileData"></div>
+      <button onclick="register()">تسجيل/تعديل هوية</button>
+    </section>
+
+    <section id="invest" style="display:none">
+      <h1>الاستثمار والتعدين</h1>
+      <button onclick="mine()">تعدين ⛏️</button>
+      <button onclick="invest()">استثمار 📈</button>
+      <div id="investData"></div>
+    </section>
+
+    <section id="state" style="display:none">
+      <h1>حالة الدولة</h1>
+      <div id="stateData"></div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
