@@ -3,193 +3,265 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الإمبراطورية الاقتصادية</title>
+    <title>البنك الدولي الرقمي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 dark:from-black dark:via-gray-900 dark:to-purple-900 text-white min-h-screen transition-all duration-500">
-    
-    <!-- Header -->
-    <header class="backdrop-blur-md bg-black/20 border-b border-purple-500/30 sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-4 space-x-reverse">
-                <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center animate-pulse">
-                    <i class="fas fa-crown text-yellow-300 text-xl"></i>
+<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white min-h-screen">
+
+    <!-- Login/Register Screen -->
+    <div id="authScreen" class="min-h-screen flex items-center justify-center px-4">
+        <div class="bg-gradient-to-r from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-3xl p-8 max-w-md w-full border border-blue-500/30 shadow-2xl">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse">
+                    <i class="fas fa-university text-3xl text-white"></i>
                 </div>
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                    الإمبراطورية الاقتصادية
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
+                    البنك الدولي الرقمي
                 </h1>
+                <p class="text-gray-400">منصة مالية عالمية متقدمة</p>
             </div>
-            <div class="flex items-center space-x-4 space-x-reverse">
-                <button id="darkModeToggle" class="p-2 rounded-lg bg-purple-600/50 hover:bg-purple-600 transition-colors">
-                    <i class="fas fa-moon"></i>
-                </button>
-                <div class="flex items-center space-x-2 space-x-reverse bg-green-500/20 px-4 py-2 rounded-lg border border-green-500/30">
-                    <i class="fas fa-coins text-yellow-400"></i>
-                    <span id="userBalance" class="font-bold text-yellow-400">50,000</span>
-                </div>
+
+            <!-- Login Form -->
+            <div id="loginForm">
+                <h2 class="text-xl font-bold text-center mb-6 text-yellow-400">تسجيل الدخول</h2>
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label class="form-label">اسم المستخدم</label>
+                        <input type="text" class="form-input" id="loginUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">كلمة المرور</label>
+                        <input type="password" class="form-input" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full mb-4">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        دخول
+                    </button>
+                </form>
+                <p class="text-center text-gray-400">
+                    ليس لديك حساب؟ 
+                    <button onclick="showRegister()" class="text-blue-400 hover:text-blue-300">إنشاء حساب جديد</button>
+                </p>
+            </div>
+
+            <!-- Register Form -->
+            <div id="registerForm" style="display: none;">
+                <h2 class="text-xl font-bold text-center mb-6 text-yellow-400">إنشاء حساب جديد</h2>
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label class="form-label">اسم المستخدم</label>
+                        <input type="text" class="form-input" id="regUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">كلمة المرور</label>
+                        <input type="password" class="form-input" id="regPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">العمر</label>
+                        <input type="number" class="form-input" id="regAge" min="16" max="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الجنسية</label>
+                        <select class="form-select" id="regNationality" required>
+                            <option value="">اختر الجنسية</option>
+                            <option value="مصر">مصر</option>
+                            <option value="السعودية">السعودية</option>
+                            <option value="الإمارات">الإمارات</option>
+                            <option value="الأردن">الأردن</option>
+                            <option value="العراق">العراق</option>
+                            <option value="سوريا">سوريا</option>
+                            <option value="لبنان">لبنان</option>
+                            <option value="المغرب">المغرب</option>
+                            <option value="الجزائر">الجزائر</option>
+                            <option value="تونس">تونس</option>
+                            <option value="قطر">قطر</option>
+                            <option value="الكويت">الكويت</option>
+                            <option value="البحرين">البحرين</option>
+                            <option value="عمان">عمان</option>
+                            <option value="فلسطين">فلسطين</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full mb-4">
+                        <i class="fas fa-user-plus mr-2"></i>
+                        إنشاء حساب
+                    </button>
+                </form>
+                <p class="text-center text-gray-400">
+                    لديك حساب بالفعل؟ 
+                    <button onclick="showLogin()" class="text-blue-400 hover:text-blue-300">تسجيل الدخول</button>
+                </p>
             </div>
         </div>
-    </header>
+    </div>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
-        <!-- User Info Card -->
-        <div class="mb-8 bg-gradient-to-r from-purple-800/50 to-pink-800/50 backdrop-blur-md rounded-3xl p-6 border border-purple-500/30 shadow-2xl">
-            <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 md:space-x-reverse">
-                <div class="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center animate-float">
-                    <i class="fas fa-user-crown text-3xl text-yellow-300"></i>
+    <!-- Main Dashboard -->
+    <div id="dashboard" style="display: none;">
+        <!-- Header -->
+        <header class="backdrop-blur-md bg-black/30 border-b border-blue-500/30 sticky top-0 z-50">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center animate-pulse">
+                        <i class="fas fa-university text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                            البنك الدولي الرقمي
+                        </h1>
+                        <p class="text-sm text-gray-400" id="headerUserInfo">مرحباً</p>
+                    </div>
                 </div>
-                <div class="text-center md:text-right flex-1">
-                    <h2 id="userName" class="text-3xl font-bold mb-2">محمد الإمبراطور</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div class="bg-blue-500/20 p-3 rounded-lg border border-blue-500/30">
-                            <i class="fas fa-calendar-alt mb-2 text-blue-400"></i>
-                            <p class="text-gray-300">العمر</p>
-                            <p id="userAge" class="font-bold text-blue-400">25 سنة</p>
-                        </div>
-                        <div class="bg-purple-500/20 p-3 rounded-lg border border-purple-500/30">
-                            <i class="fas fa-medal mb-2 text-purple-400"></i>
-                            <p class="text-gray-300">الرتبة</p>
-                            <p id="userRank" class="font-bold text-purple-400">إمبراطور</p>
-                        </div>
-                        <div class="bg-green-500/20 p-3 rounded-lg border border-green-500/30">
-                            <i class="fas fa-money-bill-wave mb-2 text-green-400"></i>
-                            <p class="text-gray-300">الراتب</p>
-                            <p id="userSalary" class="font-bold text-green-400">10,000</p>
-                        </div>
-                        <div class="bg-yellow-500/20 p-3 rounded-lg border border-yellow-500/30">
-                            <i class="fas fa-wallet mb-2 text-yellow-400"></i>
-                            <p class="text-gray-300">الرصيد</p>
-                            <p id="userWallet" class="font-bold text-yellow-400">50,000</p>
-                        </div>
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <div class="flex items-center space-x-2 space-x-reverse bg-green-500/20 px-4 py-2 rounded-lg border border-green-500/30">
+                        <i class="fas fa-coins text-yellow-400"></i>
+                        <span id="headerBalance" class="font-bold text-yellow-400">0</span>
+                    </div>
+                    <button onclick="logout()" class="p-2 rounded-lg bg-red-600/50 hover:bg-red-600 transition-colors" title="تسجيل خروج">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container mx-auto px-4 py-8">
+            <!-- User Stats Card -->
+            <div class="mb-8 bg-gradient-to-r from-blue-800/50 to-purple-800/50 backdrop-blur-md rounded-3xl p-6 border border-blue-500/30 shadow-2xl">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-blue-500/20 p-4 rounded-lg border border-blue-500/30 text-center">
+                        <i class="fas fa-user text-2xl text-blue-400 mb-2"></i>
+                        <p class="text-blue-400 font-bold text-lg" id="userName">المستخدم</p>
+                        <p class="text-gray-300 text-sm">الاسم</p>
+                    </div>
+                    <div class="bg-purple-500/20 p-4 rounded-lg border border-purple-500/30 text-center">
+                        <i class="fas fa-medal text-2xl text-purple-400 mb-2"></i>
+                        <p class="text-purple-400 font-bold text-lg" id="userRank">مواطن</p>
+                        <p class="text-gray-300 text-sm">الرتبة</p>
+                    </div>
+                    <div class="bg-green-500/20 p-4 rounded-lg border border-green-500/30 text-center">
+                        <i class="fas fa-money-bill-wave text-2xl text-green-400 mb-2"></i>
+                        <p class="text-green-400 font-bold text-lg" id="userSalary">1,000</p>
+                        <p class="text-gray-300 text-sm">الراتب</p>
+                    </div>
+                    <div class="bg-yellow-500/20 p-4 rounded-lg border border-yellow-500/30 text-center">
+                        <i class="fas fa-wallet text-2xl text-yellow-400 mb-2"></i>
+                        <p class="text-yellow-400 font-bold text-lg" id="userBalance">10,000</p>
+                        <p class="text-gray-300 text-sm">الرصيد</p>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <p class="text-gray-400"><i class="fas fa-flag mr-2"></i>الجنسية: <span id="userNationality">غير محدد</span></p>
+                    <div class="mt-2">
+                        <span class="text-sm text-gray-500">آخر راتب: <span id="lastSalaryTime">لم يتم الاستلام بعد</span></span>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Action Buttons Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <!-- Row 1: Profile & Business -->
-            <button onclick="openModal('profileModal')" class="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-blue-800 p-6 rounded-3xl border border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/25 transform hover:scale-105 transition-all duration-300 animate-glow">
-                <div class="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div class="relative z-10">
-                    <i class="fas fa-user-circle text-4xl mb-4 text-blue-300"></i>
-                    <h3 class="text-xl font-bold mb-2">الملف الشخصي</h3>
-                    <p class="text-sm text-blue-200">عرض معلوماتك الشخصية</p>
-                </div>
-            </button>
-
-            <button onclick="openModal('investmentModal')" class="group relative overflow-hidden bg-gradient-to-r from-green-600 to-green-800 p-6 rounded-3xl border border-green-500/30 hover:shadow-2xl hover:shadow-green-500/25 transform hover:scale-105 transition-all duration-300">
-                <div class="absolute inset-0 bg-gradient-to-r from-green-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div class="relative z-10">
-                    <i class="fas fa-chart-line text-4xl mb-4 text-green-300"></i>
-                    <h3 class="text-xl font-bold mb-2">استثمار</h3>
-                    <p class="text-sm text-green-200">استثمر أموالك بذكاء</p>
-                </div>
-            </button>
-
-            <button onclick="openModal('miningModal')" class="group relative overflow-hidden bg-gradient-to-r from-yellow-600 to-orange-600 p-6 rounded-3xl border border-yellow-500/30 hover:shadow-2xl hover:shadow-yellow-500/25 transform hover:scale-105 transition-all duration-300">
-                <div class="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div class="relative z-10">
-                    <i class="fas fa-pickaxe text-4xl mb-4 text-yellow-300"></i>
-                    <h3 class="text-xl font-bold mb-2">تعدين</h3>
-                    <p class="text-sm text-yellow-200">اكتشف المعادن النفيسة</p>
-                </div>
-            </button>
-
-            <!-- Row 2: Business Operations -->
-            <button onclick="openModal('factoryModal')" class="group relative overflow-hidden bg-gradient-to-r from-red-600 to-red-800 p-6 rounded-3xl border border-red-500/30 hover:shadow-2xl hover:shadow-red-500/25 transform hover:scale-105 transition-all duration-300">
-                <div class="absolute inset-0 bg-gradient-to-r from-red-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div class="relative z-10">
-                    <i class="fas fa-industry text-4xl mb-4 text-red-300"></i>
-                    <h3 class="text-xl font-bold mb-2">مصنع</h3>
-                    <p class="text-sm text-red-200">أنشئ مصانع إنتاجية</p>
-                </div>
-            </button>
-
-            <button onclick="openModal('companyModal')" class="group relative overflow-hidden bg-gradient-to-r from-purple-600 to-purple-800 p-6 rounded-3xl border border-purple-500/30 hover:shadow-2xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300">
-                <div class="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div class="relative z-10">
-                    <i class="fas fa-building text-4xl mb-4 text-purple-300"></i>
-                    <h3 class="text-xl font-bold mb-2">شركة</h3>
-                    <p class="text-sm text-purple-200">أسس إمبراطوريتك التجارية</p>
-                </div>
-            </button>
-
-            <button onclick="openModal('shopModal')" class="group relative overflow-hidden bg-gradient-to-r from-pink-600 to-pink-800 p-6 rounded-3xl border border-pink-500/30 hover:shadow-2xl hover:shadow-pink-500/25 transform hover:scale-105 transition-all duration-300">
-                <div class="absolute inset-0 bg-gradient-to-r from-pink-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div class="relative z-10">
-                    <i class="fas fa-store text-4xl mb-4 text-pink-300"></i>
-                    <h3 class="text-xl font-bold mb-2">محل تجاري</h3>
-                    <p class="text-sm text-pink-200">افتح محلات تجارية</p>
-                </div>
-            </button>
-
-            <!-- Row 3: Financial & Social -->
-            <button onclick="openModal('transferModal')" class="group relative overflow-hidden bg-gradient-to-r from-teal-600 to-cyan-600 p-6 rounded-3xl border border-teal-500/30 hover:shadow-2xl hover:shadow-teal-500/25 transform hover:scale-105 transition-all duration-300">
-                <div class="absolute inset-0 bg-gradient-to-r from-teal-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div class="relative z-10">
+            <!-- Action Buttons Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Row 1: Core Banking -->
+                <button onclick="openModal('transferModal')" class="action-btn bg-gradient-to-r from-teal-600 to-cyan-600">
                     <i class="fas fa-exchange-alt text-4xl mb-4 text-teal-300"></i>
                     <h3 class="text-xl font-bold mb-2">تحويل أموال</h3>
                     <p class="text-sm text-teal-200">حول الأموال للآخرين</p>
-                </div>
-            </button>
+                </button>
 
-            <button onclick="openModal('membersModal')" class="group relative overflow-hidden bg-gradient-to-r from-indigo-600 to-indigo-800 p-6 rounded-3xl border border-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/25 transform hover:scale-105 transition-all duration-300">
-                <div class="absolute inset-0 bg-gradient-to-r from-indigo-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div class="relative z-10">
-                    <i class="fas fa-users text-4xl mb-4 text-indigo-300"></i>
+                <button onclick="openModal('investmentModal')" class="action-btn bg-gradient-to-r from-green-600 to-green-800">
+                    <i class="fas fa-chart-line text-4xl mb-4 text-green-300"></i>
+                    <h3 class="text-xl font-bold mb-2">استثمار</h3>
+                    <p class="text-sm text-green-200">استثمر في الشركات</p>
+                </button>
+
+                <button onclick="openModal('miningModal')" class="action-btn bg-gradient-to-r from-yellow-600 to-orange-600">
+                    <i class="fas fa-pickaxe text-4xl mb-4 text-yellow-300"></i>
+                    <h3 class="text-xl font-bold mb-2">تعدين</h3>
+                    <p class="text-sm text-yellow-200">اكتشف المعادن النفيسة</p>
+                </button>
+
+                <!-- Row 2: Business -->
+                <button onclick="openModal('factoryModal')" class="action-btn bg-gradient-to-r from-red-600 to-red-800">
+                    <i class="fas fa-industry text-4xl mb-4 text-red-300"></i>
+                    <h3 class="text-xl font-bold mb-2">مصانع</h3>
+                    <p class="text-sm text-red-200">أنشئ مصانع إنتاجية</p>
+                </button>
+
+                <button onclick="openModal('manufacturingModal')" class="action-btn bg-gradient-to-r from-gray-600 to-gray-800">
+                    <i class="fas fa-cogs text-4xl mb-4 text-gray-300"></i>
+                    <h3 class="text-xl font-bold mb-2">تصنيع أسلحة</h3>
+                    <p class="text-sm text-gray-200">صنع المعدات العسكرية</p>
+                </button>
+
+                <button onclick="openModal('companyModal')" class="action-btn bg-gradient-to-r from-purple-600 to-purple-800">
+                    <i class="fas fa-building text-4xl mb-4 text-purple-300"></i>
+                    <h3 class="text-xl font-bold mb-2">شركات</h3>
+                    <p class="text-sm text-purple-200">أسس إمبراطوريتك التجارية</p>
+                </button>
+
+                <!-- Row 3: Social & Management -->
+                <button onclick="openModal('countryModal')" class="action-btn bg-gradient-to-r from-indigo-600 to-blue-600" id="countryBtn" style="display: none;">
+                    <i class="fas fa-flag text-4xl mb-4 text-indigo-300"></i>
+                    <h3 class="text-xl font-bold mb-2">إدارة الدولة</h3>
+                    <p class="text-sm text-indigo-200">تحكم في دولتك</p>
+                </button>
+
+                <button onclick="openModal('membersModal')" class="action-btn bg-gradient-to-r from-pink-600 to-rose-600">
+                    <i class="fas fa-users text-4xl mb-4 text-pink-300"></i>
                     <h3 class="text-xl font-bold mb-2">قائمة الأعضاء</h3>
-                    <p class="text-sm text-indigo-200">تصفح أعضاء الإمبراطورية</p>
-                </div>
-            </button>
+                    <p class="text-sm text-pink-200">تصفح أعضاء البنك</p>
+                </button>
 
-            <button onclick="openModal('adminModal')" class="group relative overflow-hidden bg-gradient-to-r from-gray-700 to-gray-900 p-6 rounded-3xl border border-gray-500/30 hover:shadow-2xl hover:shadow-gray-500/25 transform hover:scale-105 transition-all duration-300">
-                <div class="absolute inset-0 bg-gradient-to-r from-gray-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div class="relative z-10">
-                    <i class="fas fa-crown text-4xl mb-4 text-yellow-400"></i>
-                    <h3 class="text-xl font-bold mb-2">لوحة الإمبراطور</h3>
-                    <p class="text-sm text-gray-300">إدارة موارد الدولة</p>
-                </div>
-            </button>
-        </div>
+                <button onclick="openModal('adminModal')" class="action-btn bg-gradient-to-r from-red-700 to-red-900" id="adminBtn" style="display: none;">
+                    <i class="fas fa-user-shield text-4xl mb-4 text-red-300"></i>
+                    <h3 class="text-xl font-bold mb-2">لوحة الإدارة</h3>
+                    <p class="text-sm text-red-200">إدارة النظام الكامل</p>
+                </button>
+            </div>
 
-        <!-- Assets Overview -->
-        <div class="bg-gradient-to-r from-gray-800/50 to-gray-900/50 backdrop-blur-md rounded-3xl p-6 border border-gray-500/30">
-            <h3 class="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                <i class="fas fa-treasure-chest mr-2"></i>
-                ممتلكاتي
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-blue-500/10 p-4 rounded-xl border border-blue-500/20 text-center">
-                    <i class="fas fa-building text-2xl text-blue-400 mb-2"></i>
-                    <p class="text-blue-400 font-bold text-xl" id="companiesCount">3</p>
-                    <p class="text-sm text-gray-300">شركات</p>
-                </div>
-                <div class="bg-red-500/10 p-4 rounded-xl border border-red-500/20 text-center">
-                    <i class="fas fa-industry text-2xl text-red-400 mb-2"></i>
-                    <p class="text-red-400 font-bold text-xl" id="factoriesCount">2</p>
-                    <p class="text-sm text-gray-300">مصانع</p>
-                </div>
-                <div class="bg-pink-500/10 p-4 rounded-xl border border-pink-500/20 text-center">
-                    <i class="fas fa-store text-2xl text-pink-400 mb-2"></i>
-                    <p class="text-pink-400 font-bold text-xl" id="shopsCount">5</p>
-                    <p class="text-sm text-gray-300">محلات</p>
-                </div>
-                <div class="bg-green-500/10 p-4 rounded-xl border border-green-500/20 text-center">
-                    <i class="fas fa-chart-line text-2xl text-green-400 mb-2"></i>
-                    <p class="text-green-400 font-bold text-xl" id="investmentsCount">8</p>
-                    <p class="text-sm text-gray-300">استثمارات</p>
+            <!-- Assets Overview -->
+            <div class="bg-gradient-to-r from-gray-800/50 to-gray-900/50 backdrop-blur-md rounded-3xl p-6 border border-gray-500/30">
+                <h3 class="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
+                    <i class="fas fa-treasure-chest mr-2"></i>
+                    ممتلكاتي ومواردي
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div class="bg-blue-500/10 p-4 rounded-xl border border-blue-500/20 text-center">
+                        <i class="fas fa-building text-2xl text-blue-400 mb-2"></i>
+                        <p class="text-blue-400 font-bold text-xl" id="companiesCount">0</p>
+                        <p class="text-sm text-gray-300">شركات</p>
+                    </div>
+                    <div class="bg-red-500/10 p-4 rounded-xl border border-red-500/20 text-center">
+                        <i class="fas fa-industry text-2xl text-red-400 mb-2"></i>
+                        <p class="text-red-400 font-bold text-xl" id="factoriesCount">0</p>
+                        <p class="text-sm text-gray-300">مصانع</p>
+                    </div>
+                    <div class="bg-yellow-500/10 p-4 rounded-xl border border-yellow-500/20 text-center">
+                        <i class="fas fa-gem text-2xl text-yellow-400 mb-2"></i>
+                        <p class="text-yellow-400 font-bold text-xl" id="mineralsCount">0</p>
+                        <p class="text-sm text-gray-300">معادن</p>
+                    </div>
+                    <div class="bg-gray-500/10 p-4 rounded-xl border border-gray-500/20 text-center">
+                        <i class="fas fa-shield-alt text-2xl text-gray-400 mb-2"></i>
+                        <p class="text-gray-400 font-bold text-xl" id="weaponsCount">0</p>
+                        <p class="text-sm text-gray-300">أسلحة</p>
+                    </div>
+                    <div class="bg-green-500/10 p-4 rounded-xl border border-green-500/20 text-center">
+                        <i class="fas fa-apple-alt text-2xl text-green-400 mb-2"></i>
+                        <p class="text-green-400 font-bold text-xl" id="foodCount">0</p>
+                        <p class="text-sm text-gray-300">طعام</p>
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
-    <!-- Modals will be here -->
+    <!-- Modals Container -->
     <div id="modalContainer"></div>
+
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="fixed top-4 right-4 z-[9999] space-y-2"></div>
 
     <script src="script.js"></script>
 </body>
-              </html>
+    </html>
