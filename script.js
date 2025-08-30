@@ -117,12 +117,19 @@ function showLogin() {
 
 function handleLogin(event) {
     event.preventDefault();
+    event.stopPropagation();
+    
     const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
     
+    if (!username || !password) {
+        showNotification('يرجى ملء جميع البيانات', 'error');
+        return false;
+    }
+    
     if (!users[username] || users[username].password !== password) {
         showNotification('اسم المستخدم أو كلمة المرور غير صحيحة', 'error');
-        return;
+        return false;
     }
     
     currentUser = users[username];
@@ -132,18 +139,37 @@ function handleLogin(event) {
     updateUI();
     initializeTimers();
     showNotification(`مرحباً بك ${currentUser.name}! 🎉`, 'success');
+    
+    return false;
 }
 
 function handleRegister(event) {
     event.preventDefault();
+    event.stopPropagation();
+    
     const username = document.getElementById('regUsername').value.trim();
     const password = document.getElementById('regPassword').value;
     const age = parseInt(document.getElementById('regAge').value);
     const nationality = document.getElementById('regNationality').value;
     
+    if (!username || !password || !age || !nationality) {
+        showNotification('يرجى ملء جميع البيانات', 'error');
+        return false;
+    }
+    
     if (users[username]) {
         showNotification('اسم المستخدم موجود بالفعل', 'error');
-        return;
+        return false;
+    }
+    
+    if (username.length < 3) {
+        showNotification('اسم المستخدم يجب أن يكون 3 أحرف على الأقل', 'error');
+        return false;
+    }
+    
+    if (password.length < 4) {
+        showNotification('كلمة المرور يجب أن تكون 4 أحرف على الأقل', 'error');
+        return false;
     }
     
     users[username] = {
@@ -170,7 +196,15 @@ function handleRegister(event) {
     
     saveData();
     showNotification('تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول', 'success');
+    
+    // Clear form and switch to login
+    document.getElementById('regUsername').value = '';
+    document.getElementById('regPassword').value = '';
+    document.getElementById('regAge').value = '';
+    document.getElementById('regNationality').value = '';
+    
     showLogin();
+    return false;
 }
 
 function logout() {
